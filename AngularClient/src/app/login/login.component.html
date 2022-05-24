@@ -1,9 +1,14 @@
 <p>login works!</p>
 
-<button class="btn btn-primary" (click)="goToLoginPage()">Login</button>
+<button (click)="goToLoginPage()">Sing in Identity Server 6</button>
+<button (click)="goToLogoutPage()">Sign out Identity Server 6</button>
 
 <p>tokenResponse:</p>
 <pre><code>{{ tokenResponse | json }}</code></pre>
 
 <p>userResponse:</p>
 <pre><code>{{ userResponse | json }}</code></pre>
+
+<p>test API:</p>
+<button (click)="callApi()">Get authorized user info</button>
+<button (click)="callAnonymous()">Get anonymous info</button>

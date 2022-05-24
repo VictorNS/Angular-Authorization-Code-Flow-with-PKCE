@@ -121,6 +121,7 @@ public class Index : PageModel
                 };
 
                 await HttpContext.SignInAsync(isuser, props);
+				// TODO register a new session for the user
 
                 if (context != null)
                 {

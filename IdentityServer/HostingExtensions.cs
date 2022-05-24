@@ -1,60 +1,48 @@
-using Duende.IdentityServer;
 using IdentityServerHost;
-using Microsoft.IdentityModel.Tokens;
 using Serilog;
 
 namespace IdentityServer;
 
 internal static class HostingExtensions
 {
-    public static WebApplication ConfigureServices(this WebApplicationBuilder builder)
-    {
-        builder.Services.AddRazorPages();
+	public static WebApplication ConfigureServices(this WebApplicationBuilder builder)
+	{
+		builder.Services.AddRazorPages();
+		builder.Services.AddControllers();
 
-        builder.Services.AddIdentityServer()
-            .AddInMemoryIdentityResources(Config.IdentityResources)
-            .AddInMemoryApiScopes(Config.ApiScopes)
-            .AddInMemoryClients(Config.Clients)
-            .AddTestUsers(TestUsers.Users);
+		builder.Services.AddIdentityServer(options =>
+			{
+				//options.ServerSideSessions.UserDisplayNameClaimType = IdentityModel.JwtClaimTypes.Email;
+			})
+			.AddServerSideSessions()
+			.AddInMemoryIdentityResources(Config.IdentityResources)
+			.AddInMemoryApiScopes(Config.ApiScopes)
+			.AddInMemoryClients(Config.Clients)
+			.AddTestUsers(TestUsers.Users);
 
-        builder.Services.AddAuthentication()
-            /*.AddOpenIdConnect("oidc", "Demo IdentityServer", options =>
-            {
-                options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
-                options.SignOutScheme = IdentityServerConstants.SignoutScheme;
-                options.SaveTokens = true;
+		builder.Services.AddAuthentication();
+		builder.Services.AddLocalApiAuthentication();
 
-                options.Authority = "https://demo.duendesoftware.com";
-                options.ClientId = "interactive.confidential";
-                options.ClientSecret = "secret";
-                options.ResponseType = "code";
+		return builder.Build();
+	}
 
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    NameClaimType = "name",
-                    RoleClaimType = "role"
-                };
-            })*/;
+	public static WebApplication ConfigurePipeline(this WebApplication app)
+	{
+		app.UseSerilogRequestLogging();
+		if (app.Environment.IsDevelopment())
+		{
+			app.UseDeveloperExceptionPage();
+		}
 
-        return builder.Build();
-    }
-    
-    public static WebApplication ConfigurePipeline(this WebApplication app)
-    { 
-        app.UseSerilogRequestLogging();
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseDeveloperExceptionPage();
-        }
+		app.UseStaticFiles();
+		app.UseRouting();
 
-        app.UseStaticFiles();
-        app.UseRouting();
-            
-        app.UseIdentityServer();
+		app.UseIdentityServer();
 
-        app.UseAuthorization();
-        app.MapRazorPages().RequireAuthorization();
+		app.UseAuthorization();
+		app.MapRazorPages().RequireAuthorization();
+		app.MapControllers();
 
-        return app;
-    }
+		return app;
+	}
 }

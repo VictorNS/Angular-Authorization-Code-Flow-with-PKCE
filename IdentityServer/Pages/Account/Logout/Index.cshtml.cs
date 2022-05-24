@@ -18,7 +18,7 @@ public class Index : PageModel
     private readonly IEventService _events;
 
     [BindProperty] 
-    public string LogoutId { get; set; }
+    public string ReturnUrl { get; set; }
 
     public Index(IIdentityServerInteractionService interaction, IEventService events)
     {
@@ -26,9 +26,9 @@ public class Index : PageModel
         _events = events;
     }
 
-    public async Task<IActionResult> OnGet(string logoutId)
+    public async Task<IActionResult> OnGet(string returnUrl)
     {
-        LogoutId = logoutId;
+		ReturnUrl = returnUrl ?? "/Account/Logout/LoggedOut";
 
         var showLogoutPrompt = LogoutOptions.ShowLogoutPrompt;
 
@@ -39,7 +39,7 @@ public class Index : PageModel
         }
         else
         {
-            var context = await _interaction.GetLogoutContextAsync(LogoutId);
+            var context = await _interaction.GetLogoutContextAsync(null);
             if (context?.ShowSignoutPrompt == false)
             {
                 // it's safe to automatically sign-out
@@ -64,7 +64,7 @@ public class Index : PageModel
             // if there's no current logout context, we need to create one
             // this captures necessary info from the current logged in user
             // this can still return null if there is no context needed
-            LogoutId ??= await _interaction.CreateLogoutContextAsync();
+            var logoutId = await _interaction.CreateLogoutContextAsync();
                 
             // delete local authentication cookie
             await HttpContext.SignOutAsync();
@@ -84,14 +84,14 @@ public class Index : PageModel
                     // build a return URL so the upstream provider will redirect back
                     // to us after the user has logged out. this allows us to then
                     // complete our single sign-out processing.
-                    string url = Url.Page("/Account/Logout/Loggedout", new { logoutId = LogoutId });
+                    string url = Url.Page("/Account/Logout/Loggedout", new { logoutId });
 
                     // this triggers a redirect to the external provider for sign-out
                     return SignOut(new AuthenticationProperties { RedirectUri = url }, idp);
                 }
             }
-        }
+		}
 
-        return RedirectToPage("/Account/Logout/LoggedOut", new { logoutId = LogoutId });
-    }
+		return Redirect(ReturnUrl);
+	}
 }

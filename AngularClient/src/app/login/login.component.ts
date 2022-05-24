@@ -17,15 +17,17 @@ export class LoginComponent implements OnInit {
         private activatedRoute: ActivatedRoute,
 		private http: HttpClient
 	) { }
-	
+
     ngOnInit() {
 		this.activatedRoute.queryParams.subscribe(params => {
             if (params.code) {
-                this.getAccessToken(params.code, params.state);
+                // this.getAccessToken(params.code, params.state); // uncomment, if you want to do it from UI
+				// this.getTokenFromApi(params.code, params.state); // uncomment, if you want just to get token
+				this.getCookieFromApi(params.code, params.state);
             }
         });
 	}
-	
+
 	goToLoginPage() {
 		const state = this.strRandom(40);
 		const codeVerifier = this.strRandom(128);
@@ -41,14 +43,14 @@ export class LoginComponent implements OnInit {
 			'client_id=' + environment.oauthClientId,
 			'redirect_uri=' + encodeURIComponent(environment.oauthCallbackUrl),
 			'response_type=code',
-			'scope=' + encodeURIComponent('openid profile api1'),
+			'scope=' + encodeURIComponent('openid profile api1 IdentityServerApi'),
 			'state=' + state,
 			'code_challenge=' + codeChallenge,
 			'code_challenge_method=S256',
 			'response_mode=query'
 		];
 		const encoded = encodeURIComponent('/connect/authorize/callback?' + params.join('&'));
-		console.warn(environment.oauthLoginUrl + '?ReturnUrl=' + encoded);//TODO remove
+
 		window.location.href = environment.oauthLoginUrl + '?ReturnUrl=' + encoded;
 	}
 
@@ -70,7 +72,7 @@ export class LoginComponent implements OnInit {
             .append('code_verifier', codeVerifier)
             .append('redirect_uri', environment.oauthCallbackUrl)
             .append('client_id', environment.oauthClientId);
-		
+
 		this.http.post(environment.oauthTokenUrl, payload, {
 			headers: {
 				'Content-Type': 'application/x-www-form-urlencoded'
@@ -79,7 +81,7 @@ export class LoginComponent implements OnInit {
 			this.tokenResponse = response;
 			this.getUserInfo();
 		}, error => {
-			console.log('HTTP Error', error);
+			console.warn('HTTP Error', error);
 		});
     }
 
@@ -96,8 +98,82 @@ export class LoginComponent implements OnInit {
 		}).subscribe(response => {
 			this.userResponse = response;
 		}, error => {
-			console.log('HTTP Error', error);
+			console.warn('HTTP Error', error);
 		});
+	}
+
+	getTokenFromApi(code: string, state: string) {
+		if (state !== localStorage.getItem('state')) {
+            alert('Invalid callBack state');
+            return;
+		}
+
+		const codeVerifier = localStorage.getItem('codeVerifier');
+		if (!codeVerifier) {
+            alert('codeVerifier in localSotage is expected');
+            return;
+		}
+
+		this.http.get<any>(environment.apiToken, {
+			headers: {
+				'code': code,
+				'code_verifier': codeVerifier
+			}
+		}).subscribe(response => {
+			this.tokenResponse = response.tokenResponse;
+			this.userResponse = response.userResponse;
+		}, error => {
+			console.warn('HTTP Error', error);
+		});
+    }
+
+	getCookieFromApi(code: string, state: string) {
+		if (state !== localStorage.getItem('state')) {
+            alert('Invalid callBack state');
+            return;
+		}
+
+		const codeVerifier = localStorage.getItem('codeVerifier');
+		if (!codeVerifier) {
+            alert('codeVerifier in localSotage is expected');
+            return;
+		}
+
+		this.http.get<any>(environment.apiAuthorize, {
+			withCredentials: true,
+			headers: {
+				'code': code,
+				'code_verifier': codeVerifier
+			}
+		}).subscribe(response => {
+			this.userResponse = response;
+		}, error => {
+			console.warn('HTTP Error', error);
+		});
+	}
+
+	callApi() {
+		this.http.get<any>(environment.apiUserInfo, {
+			withCredentials: true,
+		}).subscribe(response => {
+			this.userResponse = response;
+		}, error => {
+			console.warn('HTTP Error', error);
+		});
+	}
+
+	callAnonymous() {
+		this.http.get<any>(environment.apiAnonymous, {
+			withCredentials: true,
+		}).subscribe(response => {
+			console.warn(response);
+		}, error => {
+			console.warn('HTTP Error', error);
+		});
+	}
+
+	goToLogoutPage() {
+		window.location.href = environment.oauthLogoutUrl+'?ReturnUrl=' + encodeURIComponent(environment.oauthCallbackUrl);
 	}
 
 	private strRandom(length: number) {
