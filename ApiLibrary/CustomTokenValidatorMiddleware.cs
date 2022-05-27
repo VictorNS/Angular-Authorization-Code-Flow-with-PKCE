@@ -1,14 +1,17 @@
-﻿using IdentityModel.Client;
+﻿using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Security.Claims;
 
-namespace Api;
+namespace ApiLibrary;
 
-// You may need to install the Microsoft.AspNetCore.Http.Abstractions package into your project
 public class CustomTokenValidatorMiddleware
 {
+	private const string SessionApiPath = "/api/sessions/status";
 	private readonly RequestDelegate _next;
 
 	public CustomTokenValidatorMiddleware(RequestDelegate next)
@@ -16,10 +19,10 @@ public class CustomTokenValidatorMiddleware
 		_next = next;
 	}
 
-	public async Task Invoke(HttpContext context)
+	public async Task Invoke(HttpContext context, IHttpClientFactory httpClientFactory, IdentityServerSettings settings)
 	{
 		var user = context.User;
-		if (!string.IsNullOrEmpty(context.User.FindFirstValue("sub")))
+		if (!string.IsNullOrEmpty(context.User.FindFirstValue(JwtClaimTypes.Subject)))
 		{
 			var accessToken = context.Session.GetString("AccessToken");
 
@@ -27,7 +30,7 @@ public class CustomTokenValidatorMiddleware
 			{
 				await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 				context.Session.Clear();
-				context.Response.StatusCode = (int)HttpStatusCode.Conflict;
+				context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
 				return;
 			}
 			else
@@ -37,11 +40,13 @@ public class CustomTokenValidatorMiddleware
 				if (!string.IsNullOrEmpty(accessTokenVerified))
 				{
 					var verified = DateTime.ParseExact(accessTokenVerified, "yyyyMMddHHmmss", System.Globalization.CultureInfo.InvariantCulture);
-					if (verified.AddMinutes(0) < DateTime.UtcNow)
+					if (verified.AddMinutes(1) < DateTime.UtcNow)
 					{
-						var apiClient = new HttpClient();
-						apiClient.SetBearerToken(accessToken);
-						var response = await apiClient.GetAsync("https://localhost:5001/api/sessions/status");
+						var httpMessage = new HttpRequestMessage(HttpMethod.Get, settings.Url + SessionApiPath);
+						httpMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+						var httpClient = httpClientFactory.CreateClient();
+						var response = await httpClient.SendAsync(httpMessage);
 						var forbidden = !response.IsSuccessStatusCode;
 
 						if (!forbidden)
@@ -54,7 +59,7 @@ public class CustomTokenValidatorMiddleware
 						{
 							await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 							context.Session.Clear();
-							context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+							context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
 							return;
 						}
 					}
@@ -66,7 +71,6 @@ public class CustomTokenValidatorMiddleware
 	}
 }
 
-// Extension method used to add the middleware to the HTTP request pipeline.
 public static class CustomTokenValidatorMiddlewareExtensions
 {
 	public static IApplicationBuilder UseCustomTokenValidatorMiddleware(this IApplicationBuilder builder)

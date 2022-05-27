@@ -32,9 +32,8 @@ namespace IdentityServer.Controllers
 				DisplayName = sub, // If you think this code is strange, visit:
 				SessionId = sub,   // https://github.com/DuendeSoftware/IdentityServer/blob/main/src/IdentityServer/Stores/InMemory/InMemoryServerSideSessionStore.cs#L171
 			};
-			var userSessions = await _sessionManagementService.QuerySessionsAsync(q);
-
-			var session = userSessions.Results.FirstOrDefault(x => x.SubjectId == sub);
+			var result = await _sessionManagementService.QuerySessionsAsync(q);
+			var session = result.Results.FirstOrDefault(x => x.SubjectId == sub);
 			if (session == null)
 				return Ok("");
 

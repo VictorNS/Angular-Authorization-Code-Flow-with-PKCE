@@ -1,7 +1,12 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using ApiLibrary;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddHttpClient();
+builder.Services.AddTransient<ISsoService, SsoService>();
+builder.Services.AddSingleton<IdentityServerSettings>(options =>
+	options.GetService<IConfiguration>().GetSection("IdentityServer").Get<IdentityServerSettings>());
 //builder.Services.AddRazorPages();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -16,9 +21,9 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 		options.Cookie.Name = ".Angular.Authentication";
 		options.ExpireTimeSpan = TimeSpan.FromHours(8);
 		options.SlidingExpiration = true;
-		options.EventsType = typeof(Api.CustomCookieAuthenticationEvents);
+		options.EventsType = typeof(CustomCookieAuthenticationEvents);
 	});
-builder.Services.AddSingleton<Api.CustomCookieAuthenticationEvents>();
+builder.Services.AddSingleton<CustomCookieAuthenticationEvents>();
 builder.Services.AddAuthorization(options =>
 	options.AddPolicy("ApiScope", policy =>
 	{
@@ -64,7 +69,7 @@ app.UseCors("ang");
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseSession();
-app.UseMiddleware<Api.CustomTokenValidatorMiddleware>();
+app.UseCustomTokenValidatorMiddleware();
 //app.MapRazorPages();
 app.MapControllers().RequireAuthorization("ApiScope");
 
