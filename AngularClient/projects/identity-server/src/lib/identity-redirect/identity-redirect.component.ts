@@ -1,4 +1,6 @@
+import { HttpClient } from '@angular/common/http';
 import { Component, Input, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import * as CryptoJS from 'crypto-js';
 
 @Component({
@@ -7,6 +9,7 @@ import * as CryptoJS from 'crypto-js';
 	styleUrls: ['./identity-redirect.component.scss']
 })
 export class IdentityRedirectComponent implements OnInit {
+	message: string = 'Validate current user information';
 
 	@Input()
 	oauthClientId: string = '';
@@ -14,10 +17,31 @@ export class IdentityRedirectComponent implements OnInit {
 	oauthCallbackUrl: string = '';
 	@Input()
 	oauthLoginUrl: string = '';
+	@Input()
+	apiScope: string = '';
+	@Input()
+	apiUserInfo: string = '';
 
-	constructor() { }
+	constructor(
+		private readonly router: Router,
+		private readonly http: HttpClient
+	) { }
 
 	ngOnInit(): void {
+		this.http.get<any>(this.apiUserInfo, {
+			withCredentials: true,
+		}).subscribe(response => {
+			this.router.navigate(['/']);
+		}, (error: any) => {
+			if (error.status === 401) {
+				this.redirect();
+			} else {
+				this.message = 'Something went wrong';
+			}
+		});
+	}
+
+	redirect(): void {
 		const state = this.strRandom(40);
 		const codeVerifier = this.strRandom(128);
 		localStorage.setItem('state', state);
@@ -32,12 +56,13 @@ export class IdentityRedirectComponent implements OnInit {
 			'client_id=' + this.oauthClientId,
 			'redirect_uri=' + encodeURIComponent(this.oauthCallbackUrl),
 			'response_type=code',
-			'scope=' + encodeURIComponent('openid profile api1 IdentityServerApi'),
+			'scope=' + encodeURIComponent('openid profile IdentityServerApi ' + this.apiScope),
 			'state=' + state,
 			'code_challenge=' + codeChallenge,
 			'code_challenge_method=S256',
 			'response_mode=query'
 		];
+		console.warn('callback', params.join('&'));
 		const encoded = encodeURIComponent('/connect/authorize/callback?' + params.join('&'));
 
 		window.location.href = this.oauthLoginUrl + '?ReturnUrl=' + encoded;

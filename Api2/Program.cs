@@ -19,7 +19,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 		options.Cookie.HttpOnly = true;
 		options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 		options.Cookie.SameSite = SameSiteMode.None;
-		options.Cookie.Name = ".Ang1.Authentication";
+		options.Cookie.Name = ".Ang2.Authentication";
 		options.ExpireTimeSpan = TimeSpan.FromHours(8);
 		options.SlidingExpiration = true;
 		options.EventsType = typeof(CustomCookieAuthenticationEvents);
@@ -40,7 +40,7 @@ builder.Services.AddSession(options =>
 	options.Cookie.HttpOnly = true;
 	options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 	options.Cookie.SameSite = SameSiteMode.None;
-	options.Cookie.Name = ".Ang1.Session";
+	options.Cookie.Name = ".Ang2.Session";
 	options.Cookie.IsEssential = true;
 });
 

@@ -26,7 +26,8 @@ public static class Config
 		new List<ApiScope>
 		{
 			new ApiScope(IdentityServerConstants.LocalApi.ScopeName),
-			new ApiScope("api1", "MyAPI")
+			new ApiScope("api1", "Api"),
+			new ApiScope("api2", "Api2")
 		};
 
 	public static IEnumerable<Client> Clients =>
@@ -35,7 +36,7 @@ public static class Config
             new Client
 			{
 				ClientId = "ang",
-				ClientName = "Angular Client",
+				ClientName = "Client 1",
 				AllowedGrantTypes = GrantTypes.Code,
 				DeviceCodeLifetime = 8*60*60,
 				RequireClientSecret = false,
@@ -49,6 +50,26 @@ public static class Config
 					IdentityServerConstants.StandardScopes.OpenId,
 					IdentityServerConstants.StandardScopes.Profile,
 					"api1",
+					IdentityServerConstants.LocalApi.ScopeName
+				}
+			},
+			new Client
+			{
+				ClientId = "ang2",
+				ClientName = "Client 2",
+				AllowedGrantTypes = GrantTypes.Code,
+				DeviceCodeLifetime = 8*60*60,
+				RequireClientSecret = false,
+
+				RedirectUris =           { "http://localhost:4202/oauth/callback" },
+				PostLogoutRedirectUris = { "http://localhost:4202/login" },
+				AllowedCorsOrigins =     { "http://localhost:4202" },
+
+				AllowedScopes =
+				{
+					IdentityServerConstants.StandardScopes.OpenId,
+					IdentityServerConstants.StandardScopes.Profile,
+					"api2",
 					IdentityServerConstants.LocalApi.ScopeName
 				}
 			},

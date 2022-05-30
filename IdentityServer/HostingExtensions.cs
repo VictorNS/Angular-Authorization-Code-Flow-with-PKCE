@@ -10,10 +10,7 @@ internal static class HostingExtensions
 		builder.Services.AddRazorPages();
 		builder.Services.AddControllers();
 
-		builder.Services.AddIdentityServer(options =>
-			{
-				//options.ServerSideSessions.UserDisplayNameClaimType = IdentityModel.JwtClaimTypes.Email;
-			})
+		builder.Services.AddIdentityServer()
 			.AddServerSideSessions()
 			.AddInMemoryIdentityResources(Config.IdentityResources)
 			.AddInMemoryApiScopes(Config.ApiScopes)

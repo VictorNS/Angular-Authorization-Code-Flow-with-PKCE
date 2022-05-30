@@ -1,10 +1,10 @@
-﻿using ApiLibrary;
+using ApiLibrary;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
-namespace Api.Controllers;
+namespace Api2.Controllers;
 
 [Route("api/account")]
 public class Account : ControllerBase

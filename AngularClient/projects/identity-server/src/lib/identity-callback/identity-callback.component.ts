@@ -14,9 +14,9 @@ export class IdentityCallbackComponent implements OnInit {
 	apiAuthorize: string = '';
 	
 	constructor(
-        private activatedRoute: ActivatedRoute,
-		private http: HttpClient,
-		private readonly router: Router
+        private readonly activatedRoute: ActivatedRoute,
+		private readonly router: Router,
+		private readonly http: HttpClient,
 	) { }
 
 	ngOnInit(): void {
@@ -50,7 +50,7 @@ export class IdentityCallbackComponent implements OnInit {
 			}
 		}).subscribe(response => {
 			console.warn('getCookieFromApi', response);
-			this.router.navigate(['/'])
+			this.router.navigate(['/']);
 		}, error => {
 			console.warn('getCookieFromApi', error);
 		});

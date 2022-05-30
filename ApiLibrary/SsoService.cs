@@ -15,6 +15,7 @@ namespace ApiLibrary
 
 	public class SsoService : ISsoService
 	{
+		private const string ClientCallbackPath = "/oauth/callback";
 		private readonly IHttpClientFactory _httpClientFactory;
 		private readonly IdentityServerSettings _settings;
 
@@ -41,7 +42,7 @@ namespace ApiLibrary
 				ClientId = _settings.ClientId,
 				Code = code,
 				CodeVerifier = codeVerifier,
-				RedirectUri = _settings.RedirectUrl
+				RedirectUri = _settings.ClientUrl + ClientCallbackPath
 			});
 
 			if (tokenResponse.IsError)

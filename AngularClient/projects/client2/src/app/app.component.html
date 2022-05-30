@@ -1,3 +1,19 @@
 <h1>Client 2</h1>
 
+<hr/>
+<p>
+	<a href="http://localhost:4200/login">navigate to Client 1</a>
+</p>
+
+
+<hr/>
+<p>test API:</p>
+<button (click)="callAuthorizedApi()">Get authorized info</button>
+<button (click)="callAnonymousApi()">Get anonymous info</button>
+<p>response:</p>
+<pre><code>{{ response | json }}</code></pre>
+
+
+<hr/>
+<p>router-outlet:</p>
 <router-outlet></router-outlet>
