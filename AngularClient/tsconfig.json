@@ -7,6 +7,12 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "noImplicitReturns": true,
+    "paths": {
+      "identity-server": [
+        "dist/identity-server/identity-server",
+        "dist/identity-server"
+      ]
+    },
     "noFallthroughCasesInSwitch": true,
     "sourceMap": true,
     "declaration": false,
@@ -19,11 +25,8 @@
     "lib": [
       "es2018",
       "dom"
-    ],
-	"paths": {
-		"@environments/*": ["src/environments/*"]
-	}
-},
+    ]
+  },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,

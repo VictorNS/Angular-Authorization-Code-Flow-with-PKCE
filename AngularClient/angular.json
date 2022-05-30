@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "oa2": {
+    "Client1": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -13,25 +13,25 @@
           "strict": true
         }
       },
-      "root": "",
-      "sourceRoot": "src",
+      "root": "projects/client1",
+      "sourceRoot": "projects/client1/src",
       "prefix": "app",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/oa2",
-            "index": "src/index.html",
-            "main": "src/main.ts",
-            "polyfills": "src/polyfills.ts",
-            "tsConfig": "tsconfig.app.json",
+            "outputPath": "dist/Client1",
+            "index": "projects/client1/src/index.html",
+            "main": "projects/client1/src/main.ts",
+            "polyfills": "projects/client1/src/polyfills.ts",
+            "tsConfig": "projects/client1/tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
-              "src/favicon.ico",
-              "src/assets"
+              "projects/client1/src/favicon.ico",
+              "projects/client1/src/assets"
             ],
             "styles": [
-              "src/styles.scss"
+              "projects/client1/src/styles.scss"
             ],
             "scripts": []
           },
@@ -51,8 +51,8 @@
               ],
               "fileReplacements": [
                 {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.prod.ts"
+                  "replace": "projects/client1/src/environments/environment.ts",
+                  "with": "projects/client1/src/environments/environment.prod.ts"
                 }
               ],
               "outputHashing": "all"
@@ -72,10 +72,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "oa2:build:production"
+              "browserTarget": "Client1:build:production"
             },
             "development": {
-              "browserTarget": "oa2:build:development"
+              "browserTarget": "Client1:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -83,29 +83,163 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "oa2:build"
+            "browserTarget": "Client1:build"
           }
         },
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
-            "polyfills": "src/polyfills.ts",
-            "tsConfig": "tsconfig.spec.json",
-            "karmaConfig": "karma.conf.js",
+            "main": "projects/client1/src/test.ts",
+            "polyfills": "projects/client1/src/polyfills.ts",
+            "tsConfig": "projects/client1/tsconfig.spec.json",
+            "karmaConfig": "projects/client1/karma.conf.js",
             "inlineStyleLanguage": "scss",
             "assets": [
-              "src/favicon.ico",
-              "src/assets"
+              "projects/client1/src/favicon.ico",
+              "projects/client1/src/assets"
             ],
             "styles": [
-              "src/styles.scss"
+              "projects/client1/src/styles.scss"
             ],
             "scripts": []
           }
         }
       }
+    },
+    "Client2": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        },
+        "@schematics/angular:application": {
+          "strict": true
+        }
+      },
+      "root": "projects/client2",
+      "sourceRoot": "projects/client2/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "dist/Client2",
+            "index": "projects/client2/src/index.html",
+            "main": "projects/client2/src/main.ts",
+            "polyfills": "projects/client2/src/polyfills.ts",
+            "tsConfig": "projects/client2/tsconfig.app.json",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              "projects/client2/src/favicon.ico",
+              "projects/client2/src/assets"
+            ],
+            "styles": [
+              "projects/client2/src/styles.scss"
+            ],
+            "scripts": []
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kb",
+                  "maximumError": "1mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "2kb",
+                  "maximumError": "4kb"
+                }
+              ],
+              "fileReplacements": [
+                {
+                  "replace": "projects/client2/src/environments/environment.ts",
+                  "with": "projects/client2/src/environments/environment.prod.ts"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "configurations": {
+            "production": {
+              "browserTarget": "Client2:build:production"
+            },
+            "development": {
+              "browserTarget": "Client2:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "extract-i18n": {
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "browserTarget": "Client2:build"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/client2/src/test.ts",
+            "polyfills": "projects/client2/src/polyfills.ts",
+            "tsConfig": "projects/client2/tsconfig.spec.json",
+            "karmaConfig": "projects/client2/karma.conf.js",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              "projects/client2/src/favicon.ico",
+              "projects/client2/src/assets"
+            ],
+            "styles": [
+              "projects/client2/src/styles.scss"
+            ],
+            "scripts": []
+          }
+        }
+      }
+    },
+    "IdentityServer": {
+      "projectType": "library",
+      "root": "projects/identity-server",
+      "sourceRoot": "projects/identity-server/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/identity-server/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/identity-server/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/identity-server/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/identity-server/src/test.ts",
+            "tsConfig": "projects/identity-server/tsconfig.spec.json",
+            "karmaConfig": "projects/identity-server/karma.conf.js"
+          }
+        }
+      }
     }
   },
-  "defaultProject": "oa2"
+  "defaultProject": "Client1"
 }
