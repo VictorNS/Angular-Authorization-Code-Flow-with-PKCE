@@ -1,17 +1,15 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Duende.IdentityServer;
 using Duende.IdentityServer.Events;
 using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Test;
+using IdentityModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Security.Claims;
 
 namespace IdentityServerHost.Pages.Login;
 
@@ -59,7 +57,21 @@ public class Index : PageModel
             return RedirectToPage("/ExternalLogin/Challenge", new { scheme = View.ExternalLoginScheme, returnUrl });
         }
 
-        return Page();
+		Input.RememberLogin = true;
+
+		if (User?.Identity.IsAuthenticated == true)
+		{
+			var sub = User.FindFirstValue(JwtClaimTypes.Subject);
+
+			if (!string.IsNullOrEmpty(sub))
+			{
+				Input.Button = "login";
+				Input.SubjectId = sub;
+				return await OnPost();
+			}
+		}
+
+		return Page();
     }
         
     public async Task<IActionResult> OnPost()
@@ -96,10 +108,22 @@ public class Index : PageModel
 
         if (ModelState.IsValid)
         {
-            // validate username/password against in-memory store
-            if (_users.ValidateCredentials(Input.Username, Input.Password))
+			TestUser user = null;
+			if (!string.IsNullOrEmpty(Input.SubjectId))
+			{
+				user = _users.FindBySubjectId(Input.SubjectId);
+			}
+			else
+			{
+				// validate username/password against in-memory store
+				if (_users.ValidateCredentials(Input.Username, Input.Password))
+				{
+					user = _users.FindByUsername(Input.Username);
+				}
+			}
+
+			if (user != null)
             {
-                var user = _users.FindByUsername(Input.Username);
                 await _events.RaiseAsync(new UserLoginSuccessEvent(user.Username, user.SubjectId, user.Username, clientId: context?.Client.ClientId));
 
                 // only set explicit expiration here if user chooses "remember me". 
@@ -121,33 +145,13 @@ public class Index : PageModel
                 };
 
                 await HttpContext.SignInAsync(isuser, props);
-				// TODO register a new session for the user
 
-                if (context != null)
+                if (!string.IsNullOrEmpty(Input.ReturnUrl))
                 {
-                    if (context.IsNativeClient())
-                    {
-                        // The client is native, so this change in how to
-                        // return the response is for better UX for the end user.
-                        return this.LoadingPage(Input.ReturnUrl);
-                    }
-
-                    // we can trust model.ReturnUrl since GetAuthorizationContextAsync returned non-null
-                    return Redirect(Input.ReturnUrl);
-                }
-
-                // request for a local page
-                if (Url.IsLocalUrl(Input.ReturnUrl))
+					return Redirect(Input.ReturnUrl);
+				}
+				else
                 {
-                    return Redirect(Input.ReturnUrl);
-                }
-                else if (string.IsNullOrEmpty(Input.ReturnUrl))
-                {
-                    return Redirect("~/");
-                }
-                else
-                {
-                    // user might have clicked on a malicious link - should be logged
                     throw new Exception("invalid return URL");
                 }
             }

@@ -40,6 +40,7 @@ public static class Config
 				AllowedGrantTypes = GrantTypes.Code,
 				DeviceCodeLifetime = 8*60*60,
 				RequireClientSecret = false,
+				IncludeJwtId = true,
 
 				RedirectUris =           { "http://localhost:4200/oauth/callback" },
 				PostLogoutRedirectUris = { "http://localhost:4200/login" },
@@ -60,6 +61,7 @@ public static class Config
 				AllowedGrantTypes = GrantTypes.Code,
 				DeviceCodeLifetime = 8*60*60,
 				RequireClientSecret = false,
+				IncludeJwtId = true,
 
 				RedirectUris =           { "http://localhost:4202/oauth/callback" },
 				PostLogoutRedirectUris = { "http://localhost:4202/login" },

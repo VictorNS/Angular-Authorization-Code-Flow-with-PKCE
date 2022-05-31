@@ -66,6 +66,7 @@
                                         <th>Session Id</th>
                                         <th>Display Name</th>
                                         <th>Created</th>
+                                        <th>Renewed</th>
                                         <th>Expires</th>
                                         <th></th>
                                     </tr>
@@ -78,6 +79,7 @@
                                             <td>@session.SessionId</td>
                                             <td>@session.DisplayName</td>
                                             <td>@session.Created</td>
+                                            <td>@session.Renewed</td>
                                             <td>@session.Expires</td>
                                             <td>
                                                 <form method="post">
@@ -86,17 +88,28 @@
                                                 </form>
                                             </td>
                                         </tr>
-                                        <tr><td colspan="6">
-                                            <strong>Clients:</strong>
-                                            @if (session.ClientIds?.Any() == true)
-                                            {
-                                                @(session.ClientIds.Aggregate((x, y) => $"{x}, {y}"))
-                                            }
-                                            else
-                                            {
-                                                @("None")
-                                            }
-                                        </td></tr>
+                                        <tr>
+                                            <td colspan="7">
+                                                <strong>Clients:</strong>
+                                                @if (session.ClientIds?.Any() == true)
+                                                {
+                                                    @(session.ClientIds.Aggregate((x, y) => $"{x}, {y}"))
+                                                }
+                                                else
+                                                {
+                                                    @("None")
+                                                }
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="7">
+                                                <strong>Claims:</strong>
+                                                @if (session.AuthenticationTicket?.Principal?.Claims.Any() == true)
+                                                {
+                                                    @(string.Join(", ", session.AuthenticationTicket?.Principal?.Claims.Select(c => $"{c.Type}={c.Value}")))
+                                                }
+                                            </td>
+                                        </tr>
                                     }
                                 </tbody>
                             </table>

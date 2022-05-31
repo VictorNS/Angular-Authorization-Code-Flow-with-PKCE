@@ -25,8 +25,9 @@ public class CustomTokenValidatorMiddleware
 		if (!string.IsNullOrEmpty(context.User.FindFirstValue(JwtClaimTypes.Subject)))
 		{
 			var accessToken = context.Session.GetString("AccessToken");
+			var sid = context.Session.GetString("SessionId");
 
-			if (string.IsNullOrEmpty(accessToken))
+			if (string.IsNullOrEmpty(accessToken) || string.IsNullOrEmpty(sid))
 			{
 				await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 				context.Session.Clear();
@@ -42,7 +43,7 @@ public class CustomTokenValidatorMiddleware
 					var verified = DateTime.ParseExact(accessTokenVerified, "yyyyMMddHHmmss", System.Globalization.CultureInfo.InvariantCulture);
 					if (verified.AddMinutes(1) < DateTime.UtcNow)
 					{
-						var httpMessage = new HttpRequestMessage(HttpMethod.Get, settings.Url + SessionApiPath);
+						var httpMessage = new HttpRequestMessage(HttpMethod.Get, settings.Url + SessionApiPath + "/" + sid);
 						httpMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
 						var httpClient = httpClientFactory.CreateClient();

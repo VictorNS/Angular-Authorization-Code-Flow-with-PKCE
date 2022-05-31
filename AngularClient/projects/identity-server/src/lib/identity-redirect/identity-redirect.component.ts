@@ -33,7 +33,7 @@ export class IdentityRedirectComponent implements OnInit {
 		}).subscribe(response => {
 			this.router.navigate(['/']);
 		}, (error: any) => {
-			if (error.status === 401) {
+			if (error.status === 401 || error.status === 403) {
 				this.redirect();
 			} else {
 				this.message = 'Something went wrong';

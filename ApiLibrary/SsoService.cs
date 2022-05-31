@@ -60,8 +60,28 @@ namespace ApiLibrary
 				throw new Exception(response.ToString());
 			}
 
-			currentContext.Session.SetString("AccessToken", tokenResponse.AccessToken);
-			//HttpContext.Session.SetString("RefreshToken", tokenResponse.RefreshToken);
+			try
+			{
+				currentContext.Session.SetString("AccessToken", tokenResponse.AccessToken);
+				//HttpContext.Session.SetString("RefreshToken", tokenResponse.RefreshToken);
+			}
+			catch
+			{
+				throw new Exception("Valid AccessToken is expected.");
+			}
+
+			try
+			{
+				var token = tokenResponse.IdentityToken;
+				var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+				var jwtToken = handler.ReadJwtToken(token);
+				var sid = jwtToken.Claims.First(claim => claim.Type == JwtClaimTypes.SessionId).Value;
+				currentContext.Session.SetString("SessionId", sid);
+			}
+			catch
+			{
+				throw new Exception("Valid IdentityToken is expected.");
+			}
 
 			var content = await response.Content.ReadAsStringAsync();
 			var parsed = JsonDocument.Parse(content);

@@ -19,8 +19,29 @@ namespace IdentityServer.Controllers
 			_sessionManagementService = sessionManagementService;
 		}
 
-		[HttpGet("status")]
-		public async Task<IActionResult> GetSessionStatus()
+		[HttpGet("status/{sid}")]
+		public async Task<IActionResult> GetSessionStatus(string sid)
+		{
+			var sub = User.FindFirstValue("sub");
+			var q = new SessionQuery
+			{
+				CountRequested = 0,
+				RequestPriorResults = false,
+				ResultsToken = null,
+				SubjectId = sub,
+				DisplayName = sub, // If you think this code is strange, visit:
+				SessionId = sub,   // https://github.com/DuendeSoftware/IdentityServer/blob/main/src/IdentityServer/Stores/InMemory/InMemoryServerSideSessionStore.cs#L171
+			};
+			var result = await _sessionManagementService.QuerySessionsAsync(q);
+			var session = result.Results.FirstOrDefault(x => x.SessionId == sid);
+			if (session == null)
+				return Ok("");
+
+			return Ok(session.SessionId);
+		}
+
+		[HttpGet("tryfind")]
+		public async Task<IActionResult> GetFistSessionBySubject()
 		{
 			var sub = User.FindFirstValue("sub");
 			var q = new SessionQuery

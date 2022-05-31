@@ -19,4 +19,6 @@ public class InputModel
     public string ReturnUrl { get; set; }
 
     public string Button { get; set; }
+
+	public string SubjectId { get; set; }
 }
