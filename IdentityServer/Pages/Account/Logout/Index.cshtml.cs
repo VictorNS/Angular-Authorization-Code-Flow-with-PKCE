@@ -30,6 +30,10 @@ public class Index : PageModel
     {
 		ReturnUrl = returnUrl ?? "/Account/Logout/LoggedOut";
 
+		// the final HBR decision is logging out without any questions
+		return await OnPost();
+
+		/*
         var showLogoutPrompt = LogoutOptions.ShowLogoutPrompt;
 
         if (User?.Identity.IsAuthenticated != true)
@@ -55,6 +59,7 @@ public class Index : PageModel
         }
 
         return Page();
+        */
     }
 
     public async Task<IActionResult> OnPost()

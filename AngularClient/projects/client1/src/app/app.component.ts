@@ -34,4 +34,8 @@ export class AppComponent {
 			this.response = error;
 		});
 	}
+
+	goToLogoutPage() {
+		window.location.href = environment.oauthLogoutUrl+'?ReturnUrl=' + encodeURIComponent("http://localhost:4200/login");
+	}
 }

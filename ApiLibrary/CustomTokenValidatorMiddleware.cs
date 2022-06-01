@@ -21,8 +21,9 @@ public class CustomTokenValidatorMiddleware
 
 	public async Task Invoke(HttpContext context, IHttpClientFactory httpClientFactory, IdentityServerSettings settings)
 	{
-		var user = context.User;
-		if (!string.IsNullOrEmpty(context.User.FindFirstValue(JwtClaimTypes.Subject)))
+		if (!context.Request.Headers.ContainsKey("code")
+			&& !context.Request.Headers.ContainsKey("code_verifier")
+			&& !string.IsNullOrEmpty(context.User.FindFirstValue(JwtClaimTypes.Subject)))
 		{
 			var accessToken = context.Session.GetString("AccessToken");
 			var sid = context.Session.GetString("SessionId");
@@ -36,33 +37,37 @@ public class CustomTokenValidatorMiddleware
 			}
 			else
 			{
+				var isCheckSession = context.Request.Headers.ContainsKey("check_session");
 				var accessTokenVerified = context.Session.GetString("AccessToken.Verified");
 				context.Session.SetString("AccessToken.Verified", DateTime.UtcNow.ToString("yyyyMMddHHmmss"));
-				if (!string.IsNullOrEmpty(accessTokenVerified))
+
+				if (!isCheckSession && !string.IsNullOrEmpty(accessTokenVerified))
 				{
 					var verified = DateTime.ParseExact(accessTokenVerified, "yyyyMMddHHmmss", System.Globalization.CultureInfo.InvariantCulture);
-					if (verified.AddMinutes(1) < DateTime.UtcNow)
+					isCheckSession = verified.AddSeconds(10) < DateTime.UtcNow;
+				}
+
+				if (isCheckSession)
+				{
+					var httpMessage = new HttpRequestMessage(HttpMethod.Get, settings.Url + SessionApiPath + "/" + sid);
+					httpMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+					var httpClient = httpClientFactory.CreateClient();
+					var response = await httpClient.SendAsync(httpMessage);
+					var forbidden = !response.IsSuccessStatusCode;
+
+					if (!forbidden)
 					{
-						var httpMessage = new HttpRequestMessage(HttpMethod.Get, settings.Url + SessionApiPath + "/" + sid);
-						httpMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+						string sessionId = await response.Content.ReadAsStringAsync();
+						forbidden = string.IsNullOrEmpty(sessionId);
+					}
 
-						var httpClient = httpClientFactory.CreateClient();
-						var response = await httpClient.SendAsync(httpMessage);
-						var forbidden = !response.IsSuccessStatusCode;
-
-						if (!forbidden)
-						{
-							string sessionId = await response.Content.ReadAsStringAsync();
-							forbidden = string.IsNullOrEmpty(sessionId);
-						}
-
-						if (forbidden)
-						{
-							await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-							context.Session.Clear();
-							context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-							return;
-						}
+					if (forbidden)
+					{
+						await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+						context.Session.Clear();
+						context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+						return;
 					}
 				}
 			}

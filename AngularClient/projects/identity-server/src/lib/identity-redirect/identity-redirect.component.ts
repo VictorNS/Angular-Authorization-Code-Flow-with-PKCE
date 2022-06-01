@@ -30,6 +30,9 @@ export class IdentityRedirectComponent implements OnInit {
 	ngOnInit(): void {
 		this.http.get<any>(this.apiUserInfo, {
 			withCredentials: true,
+			headers: {
+				'check_session': 'true'
+			}
 		}).subscribe(response => {
 			this.router.navigate(['/']);
 		}, (error: any) => {
